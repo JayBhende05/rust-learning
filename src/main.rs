@@ -1,90 +1,109 @@
+
 use std::env;
+
 #[derive(Debug)]
-struct Task{
-    id : usize,
-    title : String
+struct Task {
+    id: usize,
+    title: String,
 }
 
+fn add_task(tasks: &mut Vec<Task>, title: String) -> Result<(), String> {
+    if title.trim().is_empty() {
+        return Err(String::from("Task title cannot be empty"));
+    }
 
-
-fn add_task(tasks : &mut Vec<Task>, title: String  ){
-    let new_task = Task  {
-        id : tasks.len()+1,
-        title : title
+    let new_task = Task {
+        id: tasks.iter().map(|task| task.id).max().unwrap_or(0) + 1,
+        title,
     };
 
     tasks.push(new_task);
 
-    
-    println!("TASKS {:?}", tasks );
+    println!("TASKS {:?}", tasks);
+    println!("Tasks added Successfully!");
 
-    println!("Tasks added Successfully !");
-
+    Ok(())
 }
 
-fn list_task(tasks : &Vec<Task>){
-    if tasks.is_empty(){
+fn list_task(tasks: &[Task]) {
+    if tasks.is_empty() {
         println!("No Task Added");
+        return;
     }
 
-    for task in tasks{
-         println!("{}. {}", task.id, task.title);
+    for task in tasks {
+        println!("{}. {}", task.id, task.title);
     }
 }
 
-fn delete_task(tasks : &mut Vec<Task> , id : usize){
-
+fn delete_task(tasks: &mut Vec<Task>, id: usize) -> Result<(), String> {
     let index = tasks.iter().position(|task| task.id == id);
 
-    match index{
+    match index {
         Some(index) => {
             tasks.remove(index);
             println!("Task Deleted Successfully");
-            for task in tasks{
-         println!("{}. {}", task.id, task.title);
-    }
+
+            list_task(tasks);
+
+            Ok(())
         }
+
         None => {
-            println!("Invalid ID");
+            Err(String::from("Task not found"))
         }
     }
-
-
 }
 
-fn main(){
-    let mut tasks : Vec<Task> = Vec::new();
-   
+fn run(arguments: &[String], tasks: &mut Vec<Task>) -> Result<(), String> {
+    let command = arguments
+        .get(1)
+        .ok_or_else(|| String::from("Please provide a command"))?;
 
-    let arguments : Vec<String> = env::args().collect();
-    let command : &str = &arguments[1];
-
-
-
-    match command{
+    match command.as_str() {
         "add" => {
             println!("The operation to be performed is Addition");
-            let title : String = arguments[2].clone();
-            add_task(&mut tasks,title);
+
+            let title = arguments
+                .get(2)
+                .cloned()
+                .ok_or_else(|| String::from("Please provide a task title"))?;
+
+            add_task(tasks, title)?;
         }
 
         "list" => {
             println!("The operation to be performed is List");
-            add_task(&mut tasks, String::from("Understand Ownership"));
-            add_task(&mut tasks, String::from("Build CLI"));
-            list_task(&tasks);
+
+            list_task(tasks);
         }
 
         "delete" => {
             println!("The operation to be performed is Delete");
-            let id: usize = arguments[2].parse().expect("REASON");
-            add_task(&mut tasks, String::from("Understand Ownership"));
-            add_task(&mut tasks, String::from("Build CLI"));
-            delete_task(&mut tasks, id )
+
+            let id: usize = arguments
+                .get(2)
+                .ok_or_else(|| String::from("Please provide a task ID"))?
+                .parse()
+                .map_err(|_| String::from("Invalid task ID"))?;
+
+            delete_task(tasks, id)?;
         }
 
         _ => {
-            println!("This is a wild card entry ")
+            return Err(String::from("Unknown command"));
         }
+    }
+
+    Ok(())
+}
+
+fn main() {
+    let mut tasks: Vec<Task> = Vec::new();
+
+    let arguments: Vec<String> = env::args().collect();
+
+    if let Err(error) = run(&arguments, &mut tasks) {
+        eprintln!("Error: {}", error);
     }
 }
