@@ -32,6 +32,26 @@ fn list_task(tasks : &Vec<Task>){
     }
 }
 
+fn delete_task(tasks : &mut Vec<Task> , id : usize){
+
+    let index = tasks.iter().position(|task| task.id == id);
+
+    match index{
+        Some(index) => {
+            tasks.remove(index);
+            println!("Task Deleted Successfully");
+            for task in tasks{
+         println!("{}. {}", task.id, task.title);
+    }
+        }
+        None => {
+            println!("Invalid ID");
+        }
+    }
+
+
+}
+
 fn main(){
     let mut tasks : Vec<Task> = Vec::new();
    
@@ -56,7 +76,11 @@ fn main(){
         }
 
         "delete" => {
-            println!("The operation to be performed is Delete")
+            println!("The operation to be performed is Delete");
+            let id: usize = arguments[2].parse().expect("REASON");
+            add_task(&mut tasks, String::from("Understand Ownership"));
+            add_task(&mut tasks, String::from("Build CLI"));
+            delete_task(&mut tasks, id )
         }
 
         _ => {
