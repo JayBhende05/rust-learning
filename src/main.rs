@@ -22,6 +22,16 @@ fn add_task(tasks : &mut Vec<Task>, title: String  ){
 
 }
 
+fn list_task(tasks : &Vec<Task>){
+    if tasks.is_empty(){
+        println!("No Task Added");
+    }
+
+    for task in tasks{
+         println!("{}. {}", task.id, task.title);
+    }
+}
+
 fn main(){
     let mut tasks : Vec<Task> = Vec::new();
    
@@ -39,7 +49,10 @@ fn main(){
         }
 
         "list" => {
-            println!("The operation to be performed is List")
+            println!("The operation to be performed is List");
+            add_task(&mut tasks, String::from("Understand Ownership"));
+            add_task(&mut tasks, String::from("Build CLI"));
+            list_task(&tasks);
         }
 
         "delete" => {
