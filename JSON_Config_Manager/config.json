@@ -1,0 +1,5 @@
+{
+  "app_name": "MyRustApp",
+  "port": 8080,
+  "debug": true
+}
